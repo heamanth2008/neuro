@@ -1,4 +1,4 @@
-﻿const CACHE_NAME = 'neuro-glass-cache-v2';
+const CACHE_NAME = 'neuro-glass-cache-v3';
 const STATIC_ASSETS = [
   '/',
   '/glass_home.html',
