@@ -133,7 +133,8 @@ function initYTPlayer() {
         playsinline: 1,
         enablejsapi: 1,
         rel: 0,
-        origin: origin
+        origin: origin,
+        widget_referrer: origin
       },
       events: {
         onReady: onYTReady,
