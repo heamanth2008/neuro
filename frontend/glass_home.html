@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Neuro Music — Glass UI (Mobile & PC)</title>
+  <meta name="description" content="Neuro Music Glass UI — Modern web music player for PC and Mobile with YouTube integration and persistent background playback." />
+  <meta name="theme-color" content="#07070c" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body>
+
+  <!-- Ambient Dynamic Glow Backdrop -->
+  <div class="backdrop"></div>
+
+  <!-- Hidden Audio Session Keep-Alive & YouTube Player Container -->
+  <audio id="keepAliveAudio" loop playsinline preload="auto" style="display:none;"></audio>
+  <div id="yt-player-container">
+    <div id="yt-player"></div>
+  </div>
+
+  <!-- Responsive Layout Wrapper (3-Column Desktop Grid / Single-Column Mobile) -->
+  <div class="desktop-layout-wrapper">
+
+    <!-- DESKTOP SIDEBAR (Visible on PC >= 900px) -->
+    <aside class="desktop-sidebar">
+      <div class="sidebar-brand">
+        <div class="sidebar-logo-icon">
+          <i data-lucide="disc-3"></i>
+        </div>
+        <h2>Neuro Music</h2>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="sidebar-item active" id="sidebarHome">
+          <i data-lucide="house"></i>
+          <span>Discover</span>
+        </button>
+        <button class="sidebar-item" id="sidebarSearch">
+          <i data-lucide="search"></i>
+          <span>Search</span>
+        </button>
+        <button class="sidebar-item" id="sidebarLibrary">
+          <i data-lucide="library"></i>
+          <span>Your Library</span>
+        </button>
+        <button class="sidebar-item" id="sidebarLiked">
+          <i data-lucide="heart"></i>
+          <span>Liked Songs</span>
+          <span class="sidebar-badge" id="sidebarLikedBadge">0</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-section-head">
+        <span>Playlists</span>
+        <button class="sidebar-add-btn" id="sidebarCreatePlBtn">+ New</button>
+      </div>
+
+      <div class="sidebar-playlists-list" id="sidebarPlaylistsList">
+        <!-- Rendered dynamically by app.js -->
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-user" id="sidebarUserChip" title="Change profile name">
+          <div class="avatar" id="sidebarAvatar">H</div>
+          <div class="name" id="sidebarName">Hemanth</div>
+        </div>
+        <button class="icon-btn" id="sidebarThemeBtn" title="Toggle Theme" aria-label="Toggle Theme">
+          <i data-lucide="sun"></i>
+        </button>
+      </div>
+    </aside>
+
+    <!-- CENTER MAIN STAGE -->
+    <div class="stage" id="appStage">
+
+      <!-- Topbar Header -->
+      <header class="topbar">
+        <div class="greet">
+          <div class="hi" id="greetHi">Good evening</div>
+          <h1 id="greetName">Hemanth</h1>
+        </div>
+        <div class="topbar-right">
+          <button class="icon-btn" id="searchToggle" aria-label="Toggle Search">
+            <i data-lucide="search"></i>
+          </button>
+          <button class="icon-btn" id="themeToggleBtn" aria-label="Toggle Theme">
+            <i data-lucide="sun"></i>
+          </button>
+          <div class="avatar" id="userAvatar" title="Change profile name">H</div>
+        </div>
+      </header>
+
+      <!-- Interactive Live Search Panel Connected to Backend API -->
+      <section class="search-panel" id="searchPanel">
+        <div class="search-input-row">
+          <i data-lucide="search"></i>
+          <input type="text" class="search-input" id="searchInput" placeholder="Search songs, artists, albums on YouTube..." autocomplete="off" />
+          <button class="search-clear-btn" id="searchClearBtn" aria-label="Clear Search">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+        <div class="search-results" id="searchResults">
+          <div class="search-status">Type to search songs from YouTube Music...</div>
+        </div>
+      </section>
+
+      <!-- Modeswitch Tab Bar (Discover / Your Library) -->
+      <nav class="modeswitch">
+        <div class="mode active" data-view="discover" id="tabDiscover">Discover</div>
+        <div class="mode" data-view="library" id="tabLibrary">Your Library</div>
+      </nav>
+
+      <!-- VIEW 1: DISCOVER -->
+      <main class="view active" id="view-discover">
+        
+        <!-- Featured Banner -->
+        <section class="featured" id="featuredMix">
+          <div class="tag">✨ Featured Mix</div>
+          <h2 id="featuredTitle">NCS Top Releases</h2>
+          <p id="featuredDesc">Curated high-energy electronic & melodic hits</p>
+          <button class="play-pill" id="featuredPlayBtn">
+            <i data-lucide="play"></i>
+            <span>Play Now</span>
+          </button>
+        </section>
+
+        <!-- Quick Vibes / Genres -->
+        <div class="genre-pills" id="genrePills">
+          <div class="genre-pill active" data-genre="All">All</div>
+          <div class="genre-pill" data-genre="Electronic">Electronic</div>
+          <div class="genre-pill" data-genre="Lofi">Lofi & Chill</div>
+          <div class="genre-pill" data-genre="Synthwave">Synthwave</div>
+          <div class="genre-pill" data-genre="Ambient">Ambient</div>
+          <div class="genre-pill" data-genre="Gaming">Gaming</div>
+        </div>
+
+        <!-- Pick Up Where You Left Off (Horizontal Rail) -->
+        <section class="section">
+          <div class="section-head">
+            <h3>Pick Up Where You Left Off</h3>
+            <span class="see-all" id="seeAllRecent">See all</span>
+          </div>
+          <div class="rail" id="recentRail">
+            <!-- Populated dynamically by app.js -->
+          </div>
+        </section>
+
+        <!-- Trending Hits (List Panel) -->
+        <section class="section">
+          <div class="section-head">
+            <h3>Popular Right Now</h3>
+          </div>
+          <div class="panel" id="trendingPanel">
+            <!-- Populated dynamically by app.js -->
+          </div>
+        </section>
+
+        <!-- Artists You Follow -->
+        <section class="section">
+          <div class="section-head">
+            <h3>Artists You Love</h3>
+          </div>
+          <div class="rail artist-rail" id="artistRail">
+            <!-- Populated dynamically by app.js -->
+          </div>
+        </section>
+
+      </main>
+
+      <!-- VIEW 2: YOUR LIBRARY -->
+      <main class="view" id="view-library">
+        
+        <!-- Liked Songs Hero Row -->
+        <div class="liked-row" id="likedHeroRow">
+          <div class="ico">
+            <i data-lucide="heart"></i>
+          </div>
+          <div class="meta">
+            <div class="t">Liked Songs</div>
+            <div class="a" id="likedCountBadge">0 songs</div>
+          </div>
+          <i data-lucide="chevron-right" class="arrow"></i>
+        </div>
+
+        <!-- Playlists Section -->
+        <section class="section">
+          <div class="section-head">
+            <h3>Your Playlists</h3>
+            <span class="see-all" id="createPlaylistBtn">+ New Playlist</span>
+          </div>
+          <div class="panel" id="playlistsPanel">
+            <!-- Populated dynamically by app.js -->
+          </div>
+        </section>
+
+        <!-- Albums Section -->
+        <section class="section">
+          <div class="section-head">
+            <h3>Curated Collections</h3>
+          </div>
+          <div class="rail" id="albumsRail">
+            <!-- Populated dynamically by app.js -->
+          </div>
+        </section>
+
+      </main>
+
+      <!-- VIEW 3: LIKED SONGS SUBVIEW -->
+      <main class="view" id="view-liked">
+        <div class="subview-header">
+          <button class="subview-back-btn" id="likedBackBtn" aria-label="Back to Library">
+            <i data-lucide="arrow-left"></i>
+          </button>
+          <div class="subview-title-group">
+            <h2>Liked Songs</h2>
+            <p id="likedSubtext">0 tracks</p>
+          </div>
+        </div>
+        <div class="subview-actions">
+          <button class="btn-primary" id="playAllLikedBtn">
+            <i data-lucide="play"></i> Play All
+          </button>
+          <button class="btn-secondary" id="shuffleLikedBtn">
+            <i data-lucide="shuffle"></i> Shuffle
+          </button>
+        </div>
+        <div class="panel" id="likedListPanel">
+          <!-- Liked songs rendered here -->
+        </div>
+      </main>
+
+      <!-- VIEW 4: PLAYLIST DETAIL SUBVIEW -->
+      <main class="view" id="view-playlist">
+        <div class="subview-header">
+          <button class="subview-back-btn" id="playlistBackBtn" aria-label="Back to Library">
+            <i data-lucide="arrow-left"></i>
+          </button>
+          <div class="subview-title-group">
+            <h2 id="playlistViewTitle">Playlist Name</h2>
+            <p id="playlistViewSubtext">0 tracks</p>
+          </div>
+        </div>
+        <div class="subview-actions">
+          <button class="btn-primary" id="playPlaylistBtn">
+            <i data-lucide="play"></i> Play All
+          </button>
+          <button class="btn-secondary" id="deletePlaylistBtn" style="color:var(--like);">
+            <i data-lucide="trash-2"></i> Delete
+          </button>
+        </div>
+        <div class="panel" id="playlistTracksPanel">
+          <!-- Playlist tracks rendered here -->
+        </div>
+      </main>
+
+    </div>
+
+    <!-- RIGHT COLUMN / OVERLAY: FULLSCREEN GLASS PLAYER (Sticky on PC, Slide-up on Mobile) -->
+    <div class="player-screen" id="playerScreen">
+      
+      <div class="player-topbar">
+        <button class="player-collapse-btn" id="collapsePlayerBtn" aria-label="Collapse Player">
+          <i data-lucide="chevron-down"></i>
+        </button>
+        <div class="player-handle"></div>
+        <button class="icon-btn" id="playerShareBtn" aria-label="Share Song">
+          <i data-lucide="share-2"></i>
+        </button>
+      </div>
+
+      <!-- Album Art with Rotation/Scaling Ambient Animation -->
+      <div class="player-art-wrap">
+        <div class="player-art" id="playerArt">
+          <i data-lucide="music"></i>
+        </div>
+      </div>
+
+      <!-- Track Info & Like Toggle -->
+      <div class="player-info-row">
+        <div>
+          <h1 id="playerTitle">Beautiful Now</h1>
+          <p id="playerArtist">Zedd &amp; Marshmello</p>
+        </div>
+        <button class="player-like-btn" id="playerLikeBtn" aria-label="Like Track">
+          <i data-lucide="heart"></i>
+        </button>
+      </div>
+
+      <!-- Lyrics Pill Button -->
+      <button class="lyrics-pill" id="openLyricsBtn">
+        <i data-lucide="mic"></i>
+        <span>Lyrics</span>
+      </button>
+
+      <!-- Progress Scrubber -->
+      <div class="progress-area">
+        <div class="progress-bar" id="playerScrubberBar">
+          <div class="progress-fill" id="playerScrubberFill"></div>
+        </div>
+        <div class="time-row">
+          <span id="playerElapsed">0:00</span>
+          <span id="playerRemaining">-0:00</span>
+        </div>
+      </div>
+
+      <!-- Controls Row -->
+      <div class="player-controls">
+        <button class="ctrl-btn" id="playerShuffleBtn" aria-label="Shuffle">
+          <i data-lucide="shuffle"></i>
+        </button>
+        <button class="ctrl-btn skip" id="playerPrevBtn" aria-label="Previous Track">
+          <i data-lucide="skip-back"></i>
+        </button>
+        <button class="player-main-play-btn" id="playerPlayPauseBtn" aria-label="Play/Pause">
+          <i data-lucide="play" id="playerMainPlayIcon"></i>
+        </button>
+        <button class="ctrl-btn skip" id="playerNextBtn" aria-label="Next Track">
+          <i data-lucide="skip-forward"></i>
+        </button>
+        <button class="ctrl-btn" id="playerRepeatBtn" aria-label="Repeat">
+          <i data-lucide="repeat"></i>
+        </button>
+      </div>
+
+      <!-- Volume Row -->
+      <div class="volume-row">
+        <button class="ctrl-btn" id="playerMuteBtn" aria-label="Mute Toggle">
+          <i data-lucide="volume-2" id="volumeIcon"></i>
+        </button>
+        <input type="range" class="volume-slider" id="playerVolumeSlider" min="0" max="100" value="70" aria-label="Volume Slider" />
+      </div>
+
+      <!-- Up Next Queue Section with Equalizer -->
+      <div class="player-queue-label">Up Next</div>
+      <div class="panel" id="playerQueueList">
+        <!-- Populated dynamically with equalizer bars for playing track -->
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- FLOATING GLASS MINI-PLAYER (Mobile Only) -->
+  <div class="mini-player-bar hidden" id="miniPlayerBar" title="Open Glass Player">
+    <div class="mini-art" id="miniArt">
+      <i data-lucide="music"></i>
+    </div>
+    <div class="mini-info">
+      <div class="mini-title" id="miniTitle">No track playing</div>
+      <div class="mini-artist" id="miniArtist">Tap any song to play</div>
+    </div>
+    <div class="mini-ctrls">
+      <button class="mini-btn" id="miniPlayPauseBtn" aria-label="Play or Pause">
+        <i data-lucide="play" id="miniPlayIcon"></i>
+      </button>
+      <button class="mini-btn sec" id="miniNextBtn" aria-label="Next Track">
+        <i data-lucide="skip-forward"></i>
+      </button>
+    </div>
+    <div class="mini-progress-line">
+      <div class="mini-progress-fill" id="miniProgressFill"></div>
+    </div>
+  </div>
+
+  <!-- BOTTOM GLASS DOCK (Mobile Only) -->
+  <nav class="dock">
+    <button class="dock-item active" id="dockHome" data-target="discover">
+      <i data-lucide="house"></i>
+      <span>Home</span>
+    </button>
+    <button class="dock-item" id="dockSearch" data-target="search">
+      <i data-lucide="search"></i>
+      <span>Search</span>
+    </button>
+    <button class="dock-item" id="dockLibrary" data-target="library">
+      <i data-lucide="library"></i>
+      <span>Library</span>
+    </button>
+    <button class="dock-item" id="dockLiked" data-target="liked">
+      <i data-lucide="heart"></i>
+      <span>Liked</span>
+    </button>
+  </nav>
+
+  <!-- SLIDING GLASS LYRICS OVERLAY -->
+  <div class="lyrics-screen" id="lyricsScreen">
+    <div class="lyrics-top">
+      <button class="player-collapse-btn" id="closeLyricsBtn" aria-label="Close Lyrics">
+        <i data-lucide="chevron-down"></i>
+      </button>
+      <div class="player-handle"></div>
+    </div>
+    <div class="lyric-list" id="lyricList">
+      <p>I see the lights, they're calling out your name</p>
+      <p>Echoes in the dark, nothing stays the same</p>
+      <p class="now">Tonight's the night <span class="sung">we light up the sky</span></p>
+      <p>Every little rhythm makes the moment fly</p>
+      <p>Higher than the clouds, deeper than the sea</p>
+      <p>Neuro beats and melody, living wild and free</p>
+      <p>Turn the music up and let the world fade out</p>
+      <p>This is what the sound is all about</p>
+    </div>
+  </div>
+
+  <!-- MODALS: Create Playlist & Add To Playlist -->
+  <div class="modal-overlay" id="createPlaylistModal">
+    <div class="modal-card">
+      <h3>Create New Playlist</h3>
+      <input type="text" class="modal-input" id="newPlaylistInput" placeholder="Playlist Name..." maxlength="40" />
+      <div class="modal-actions">
+        <button class="btn-secondary" id="cancelCreatePlaylistBtn">Cancel</button>
+        <button class="btn-primary" id="confirmCreatePlaylistBtn">Create</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="addToPlaylistModal">
+    <div class="modal-card">
+      <h3>Add to Playlist</h3>
+      <div class="panel" id="addToPlaylistChoices" style="max-height:220px; overflow-y:auto;">
+        <!-- Choices rendered dynamically -->
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" id="cancelAddToPlaylistBtn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast">Ready</div>
+
+  <!-- Hidden YouTube Player (must have real dimensions for API to work) -->
+  <div id="yt-player-container" style="position:fixed;left:-9999px;top:-9999px;width:240px;height:180px;z-index:-9999;pointer-events:none;opacity:0.001;">
+    <div id="yt-player"></div>
+  </div>
+
+  <!-- Silent keep-alive audio for mobile background playback -->
+  <audio id="keepAliveAudio" loop preload="none" style="display:none;">
+    <source src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=" type="audio/wav">
+  </audio>
+
+  <!-- Scripts -->
+  <script src="app.js"></script>
+  <script>
+    // Register Service Worker for PWA & Background Support
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js')
+          .then(reg => console.log('Neuro Music SW registered', reg))
+          .catch(err => console.log('SW registration failed', err));
+      });
+    }
+  </script>
+</body>
+</html>
