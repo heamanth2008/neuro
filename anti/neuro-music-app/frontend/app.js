@@ -121,21 +121,25 @@ window.onYouTubeIframeAPIReady = function() {
 
 function initYTPlayer() {
   try {
-    const origin = window.location.origin || (window.location.protocol + '//' + window.location.host);
+    const origin = window.location.origin;
+    const playerVars = {
+      autoplay: 1,
+      controls: 0,
+      disablekb: 1,
+      fs: 0,
+      playsinline: 1,
+      enablejsapi: 1,
+      rel: 0
+    };
+    if (origin && origin.startsWith('http')) {
+      playerVars.origin = origin;
+      playerVars.widget_referrer = origin;
+    }
+
     ytPlayer = new YT.Player('yt-player', {
       height: '180',
       width: '240',
-      playerVars: {
-        autoplay: 1,
-        controls: 0,
-        disablekb: 1,
-        fs: 0,
-        playsinline: 1,
-        enablejsapi: 1,
-        rel: 0,
-        origin: origin,
-        widget_referrer: origin
-      },
+      playerVars: playerVars,
       events: {
         onReady: onYTReady,
         onStateChange: onYTStateChange,
