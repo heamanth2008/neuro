@@ -1,0 +1,22 @@
+﻿{
+  "name": "Neuro Music",
+  "short_name": "Neuro",
+  "description": "Neuro Music Glass UI with persistent background playback",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#07070c",
+  "theme_color": "#07070c",
+  "icons": [
+    {
+      "src": "https://via.placeholder.com/192.png?text=Neuro",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://via.placeholder.com/512.png?text=Neuro",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
